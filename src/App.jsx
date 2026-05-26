@@ -561,10 +561,22 @@ export default function App() {
         </button>
         <div style={{ marginTop: 4 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 9 }}>Zona peligrosa</div>
-          <button onClick={() => { if (window.confirm('¿Borrar TODAS las sesiones?')) setState(s => ({ ...s, sessions: [] })) }}
-            style={{ width: '100%', padding: 10, borderRadius: 12, border: '1.5px solid #fca5a5', background: 'white', cursor: 'pointer', color: '#dc2626', fontWeight: 600, fontSize: 13 }}>
-            Borrar historial completo
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <button onClick={() => {
+              if (window.confirm('¿Reiniciar estadísticas? Se borrarán todas las sesiones pero se mantendrán los planes y favoritas.'))
+                setState(s => ({ ...s, sessions: [] }))
+            }}
+              style={{ width: '100%', padding: 10, borderRadius: 12, border: '1.5px solid #fed7aa', background: 'white', cursor: 'pointer', color: '#ea580c', fontWeight: 600, fontSize: 13 }}>
+              🔄 Reiniciar estadísticas
+            </button>
+            <button onClick={() => {
+              if (window.confirm('¿Borrar TODO? Se eliminarán sesiones, favoritas y se reiniciarán los contadores de rutinas.'))
+                setState(s => ({ ...s, sessions: [], favorites: [], currentIndexByPlan: Object.fromEntries(s.plans.map(p => [p.id, p.routines - 1])) }))
+            }}
+              style={{ width: '100%', padding: 10, borderRadius: 12, border: '1.5px solid #fca5a5', background: 'white', cursor: 'pointer', color: '#dc2626', fontWeight: 600, fontSize: 13 }}>
+              🗑️ Borrar historial completo
+            </button>
+          </div>
         </div>
       </div>
     )
