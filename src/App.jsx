@@ -19,6 +19,7 @@ const EMPTY_STATE = {
   currentIndexByPlan: Object.fromEntries(DEFAULT_PLANS.map(p => [p.id, p.routines - 1])),
   sessions: [],
   favorites: [],
+  statsFrom: null,
 }
 
 function loadLocal() {
@@ -176,16 +177,19 @@ export default function App() {
 
   function computeStats() {
     const t = today(), wk = weekKey(t), mo = monthKey(t), yr = yearKey(t)
+    const from = state.statsFrom || '0000-00-00'
+    const counted = state.sessions.filter(s => s.date >= from)
     const byPlan = {}, tagCount = {}
-    state.sessions.forEach(s => {
+    counted.forEach(s => {
       byPlan[s.planName] = (byPlan[s.planName] || 0) + 1
       s.tags.forEach(tag => { tagCount[tag] = (tagCount[tag] || 0) + 1 })
     })
     return {
-      thisWeek:  state.sessions.filter(s => weekKey(s.date)  === wk).length,
-      thisMonth: state.sessions.filter(s => monthKey(s.date) === mo).length,
-      thisYear:  state.sessions.filter(s => yearKey(s.date)  === yr).length,
-      total: state.sessions.length, byPlan, tagCount,
+      thisWeek:  counted.filter(s => weekKey(s.date)  === wk).length,
+      thisMonth: counted.filter(s => monthKey(s.date) === mo).length,
+      thisYear:  counted.filter(s => yearKey(s.date)  === yr).length,
+      total: counted.length, byPlan, tagCount,
+      statsFrom: state.statsFrom,
     }
   }
   const stats = computeStats()
@@ -563,15 +567,20 @@ export default function App() {
           <div style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 9 }}>Zona peligrosa</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <button onClick={() => {
-              if (window.confirm('¿Reiniciar estadísticas? Se borrarán todas las sesiones pero se mantendrán los planes y favoritas.'))
-                setState(s => ({ ...s, sessions: [] }))
+              if (window.confirm('¿Reiniciar estadísticas desde hoy? El historial y las notas se conservan, solo se resetean los contadores.'))
+                setState(s => ({ ...s, statsFrom: today() }))
             }}
               style={{ width: '100%', padding: 10, borderRadius: 12, border: '1.5px solid #fed7aa', background: 'white', cursor: 'pointer', color: '#ea580c', fontWeight: 600, fontSize: 13 }}>
               🔄 Reiniciar estadísticas
             </button>
+            {state.statsFrom && (
+              <div style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center' }}>
+                Stats desde {formatDate(state.statsFrom)} · <span style={{ color: '#3b82f6', cursor: 'pointer', fontWeight: 600 }} onClick={() => setState(s => ({ ...s, statsFrom: null }))}>ver todo el historial</span>
+              </div>
+            )}
             <button onClick={() => {
-              if (window.confirm('¿Borrar TODO? Se eliminarán sesiones, favoritas y se reiniciarán los contadores de rutinas.'))
-                setState(s => ({ ...s, sessions: [], favorites: [], currentIndexByPlan: Object.fromEntries(s.plans.map(p => [p.id, p.routines - 1])) }))
+              if (window.confirm('¿Borrar TODO el historial? Se eliminarán sesiones, favoritas y se reiniciarán los contadores.'))
+                setState(s => ({ ...s, sessions: [], favorites: [], statsFrom: null, currentIndexByPlan: Object.fromEntries(s.plans.map(p => [p.id, p.routines - 1])) }))
             }}
               style={{ width: '100%', padding: 10, borderRadius: 12, border: '1.5px solid #fca5a5', background: 'white', cursor: 'pointer', color: '#dc2626', fontWeight: 600, fontSize: 13 }}>
               🗑️ Borrar historial completo
