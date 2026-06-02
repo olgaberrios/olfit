@@ -79,6 +79,145 @@ const Icon = ({ name, size = 20 }) => {
   )
 }
 
+// ─── MODALES (componentes estables fuera de App para evitar pérdida de foco) ──
+
+function LogModal({ activePlan, currentRoutine, sessionDraft, setSessionDraft, isFav, toggleFav, logSession, onClose }) {
+  const [customTag, setCustomTag] = useState('')
+  const routineNum = sessionDraft.routineOverride !== null ? sessionDraft.routineOverride : currentRoutine
+  function toggleTag(t) { setSessionDraft(d => ({ ...d, tags: d.tags.includes(t) ? d.tags.filter(x => x !== t) : [...d.tags, t] })) }
+  function addCustom() { const t = customTag.trim().toLowerCase(); if (t && !sessionDraft.tags.includes(t)) { toggleTag(t); setCustomTag('') } }
+  return (
+    <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 15 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: 18, fontFamily: "\'Bebas Neue\', cursive", letterSpacing: 1, color: '#0f172a' }}>{activePlan.emoji} {activePlan.name} · R{routineNum}</div>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><Icon name="close"/></button>
+      </div>
+      <button onClick={() => toggleFav(activePlan.id, routineNum)}
+        style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 20, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 700,
+          borderColor: isFav(activePlan.id, routineNum) ? '#f59e0b' : '#e2e8f0', background: isFav(activePlan.id, routineNum) ? '#fef3c7' : 'white', color: isFav(activePlan.id, routineNum) ? '#92400e' : '#64748b' }}>
+        <Icon name="star" size={14}/>{isFav(activePlan.id, routineNum) ? 'Favorita ★' : 'Marcar favorita'}
+      </button>
+      <div>
+        <div style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Material</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {PRESET_TAGS.map(t => (
+            <button key={t} onClick={() => toggleTag(t)} style={{ padding: '6px 12px', borderRadius: 20, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+              borderColor: sessionDraft.tags.includes(t) ? '#1e3a8a' : '#e2e8f0', background: sessionDraft.tags.includes(t) ? '#1e3a8a' : 'white', color: sessionDraft.tags.includes(t) ? 'white' : '#64748b' }}>{t}</button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 7, marginTop: 8 }}>
+          <input value={customTag} onChange={e => setCustomTag(e.target.value)} onKeyDown={e => e.key === 'Enter' && addCustom()} placeholder="Otro material..."
+            style={{ flex: 1, padding: '8px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', fontSize: 13, outline: 'none' }}/>
+          <button onClick={addCustom} style={{ padding: '8px 11px', borderRadius: 10, border: 'none', background: '#1e3a8a', color: 'white', cursor: 'pointer' }}><Icon name="add" size={15}/></button>
+        </div>
+        {sessionDraft.tags.filter(t => !PRESET_TAGS.includes(t)).map(t => (
+          <span key={t} style={{ display: 'inline-block', margin: '4px 4px 0 0', background: '#f0f9ff', color: '#0369a1', borderRadius: 8, padding: '3px 10px', fontSize: 12, fontWeight: 600 }}>
+            {t} <span style={{ cursor: 'pointer' }} onClick={() => toggleTag(t)}>×</span>
+          </span>
+        ))}
+      </div>
+      <div>
+        <div style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 7 }}>Nota</div>
+        <textarea value={sessionDraft.note} onChange={e => setSessionDraft(d => ({ ...d, note: e.target.value }))} placeholder="Cómo fue, sensaciones..."
+          style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', fontSize: 13, resize: 'none', outline: 'none', height: 65, boxSizing: 'border-box' }}/>
+      </div>
+      <button onClick={logSession} style={{ padding: 14, borderRadius: 14, border: 'none', background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', color: 'white', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>
+        ¡Completada! →
+      </button>
+    </div>
+  )
+}
+
+function SkipModal({ activePlan, currentIndex, isFav, onSelect, onClose }) {
+  const [search, setSearch] = useState('')
+  const routines = Array.from({ length: activePlan.routines }, (_, i) => i).reverse()
+  const filtered = search ? routines.filter(i => String(i + 1).includes(search)) : routines
+  return (
+    <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 11 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: 18, fontFamily: "\'Bebas Neue\', cursive", letterSpacing: 1, color: '#0f172a' }}>Ir a rutina · {activePlan.emoji} {activePlan.name}</div>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><Icon name="close"/></button>
+      </div>
+      <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar número..."
+        style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #e2e8f0', fontSize: 14, outline: 'none' }}/>
+      <div style={{ maxHeight: 340, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 5 }}>
+        {filtered.slice(0, 60).map(i => (
+          <button key={i} onClick={() => onSelect(i)}
+            style={{ padding: '10px 14px', borderRadius: 11, border: '1.5px solid', cursor: 'pointer', textAlign: 'left', fontSize: 13, fontWeight: 600,
+              borderColor: currentIndex === i ? '#1e3a8a' : '#e2e8f0', background: currentIndex === i ? '#dbeafe' : 'white', color: currentIndex === i ? '#1e3a8a' : '#334155',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            Rutina {i + 1}
+            <span style={{ display: 'flex', gap: 5 }}>
+              {isFav(activePlan.id, i + 1) && <span style={{ color: '#f59e0b' }}>★</span>}
+              {currentIndex === i && <span style={{ fontSize: 10, color: '#1e40af' }}>← actual</span>}
+            </span>
+          </button>
+        ))}
+        {filtered.length > 60 && <div style={{ textAlign: 'center', fontSize: 11, color: '#94a3b8', padding: 6 }}>Filtra para ver más resultados</div>}
+      </div>
+    </div>
+  )
+}
+
+function EditPlanModal({ editingPlan, setEditingPlan, onSave, onClose }) {
+  return (
+    <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 15 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: 18, fontFamily: "\'Bebas Neue\', cursive", letterSpacing: 1, color: '#0f172a' }}>Editar plan</div>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><Icon name="close"/></button>
+      </div>
+      {[['Emoji', 'emoji', '22px'], ['Nombre', 'name', '14px']].map(([label, field, fs]) => (
+        <div key={field}>
+          <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1 }}>{label}</label>
+          <input value={editingPlan[field]} onChange={e => setEditingPlan(p => ({ ...p, [field]: e.target.value }))}
+            style={{ display: 'block', width: '100%', marginTop: 5, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', fontSize: fs, outline: 'none', boxSizing: 'border-box' }}/>
+        </div>
+      ))}
+      <div>
+        <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1 }}>Número de rutinas</label>
+        <input type="number" min={1} max={999} value={editingPlan.routines}
+          onChange={e => setEditingPlan(p => ({ ...p, routines: Math.max(1, Math.min(999, Number(e.target.value))) }))}
+          style={{ display: 'block', width: '100%', marginTop: 5, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', fontSize: 22, fontWeight: 700, outline: 'none', boxSizing: 'border-box', color: '#1e3a8a' }}/>
+        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>Máximo 999 rutinas por plan</div>
+      </div>
+      <button onClick={onSave} style={{ padding: 14, borderRadius: 14, border: 'none', background: '#1e3a8a', color: 'white', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+        Guardar cambios
+      </button>
+    </div>
+  )
+}
+
+function NewPlanModal({ newPlanDraft, setNewPlanDraft, onCreate, onClose }) {
+  return (
+    <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 15 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: 18, fontFamily: "\'Bebas Neue\', cursive", letterSpacing: 1, color: '#0f172a' }}>Nuevo plan</div>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><Icon name="close"/></button>
+      </div>
+      {[['Emoji', 'emoji', '22px'], ['Nombre', 'name', '14px']].map(([label, field, fs]) => (
+        <div key={field}>
+          <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1 }}>{label}</label>
+          <input value={newPlanDraft[field]} onChange={e => setNewPlanDraft(p => ({ ...p, [field]: e.target.value }))} placeholder={field === 'name' ? 'Nombre del plan' : ''}
+            style={{ display: 'block', width: '100%', marginTop: 5, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', fontSize: fs, outline: 'none', boxSizing: 'border-box' }}/>
+        </div>
+      ))}
+      <div>
+        <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1 }}>Número de rutinas</label>
+        <input type="number" min={1} max={999} value={newPlanDraft.routines}
+          onChange={e => setNewPlanDraft(p => ({ ...p, routines: Math.max(1, Math.min(999, Number(e.target.value))) }))}
+          style={{ display: 'block', width: '100%', marginTop: 5, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', fontSize: 22, fontWeight: 700, outline: 'none', boxSizing: 'border-box', color: '#1e3a8a' }}/>
+      </div>
+      <button onClick={() => {
+        if (!newPlanDraft.name.trim()) return
+        const np = { id: `plan-${Date.now()}`, emoji: newPlanDraft.emoji, name: newPlanDraft.name.trim(), routines: newPlanDraft.routines }
+        onCreate(np)
+      }} style={{ padding: 14, borderRadius: 14, border: 'none', background: '#1e3a8a', color: 'white', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+        Crear plan
+      </button>
+    </div>
+  )
+}
+
 // ─── APP ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [state, setState]     = useState(() => loadLocal() || EMPTY_STATE)
@@ -592,149 +731,47 @@ export default function App() {
   }
 
   // ─── MODALES ──────────────────────────────────────────────────────────────
-  const LogModal = () => {
-    const [customTag, setCustomTag] = useState('')
-    const routineNum = sessionDraft.routineOverride !== null ? sessionDraft.routineOverride : currentRoutine
-    function toggleTag(t) { setSessionDraft(d => ({ ...d, tags: d.tags.includes(t) ? d.tags.filter(x => x !== t) : [...d.tags, t] })) }
-    function addCustom() { const t = customTag.trim().toLowerCase(); if (t && !sessionDraft.tags.includes(t)) { toggleTag(t); setCustomTag('') } }
-    return (
-      <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 15 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 18, fontFamily: "'Bebas Neue', cursive", letterSpacing: 1, color: '#0f172a' }}>{activePlan.emoji} {activePlan.name} · R{routineNum}</div>
-          <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><Icon name="close"/></button>
-        </div>
-        <button onClick={() => toggleFav(activePlan.id, routineNum)}
-          style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 20, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 700,
-            borderColor: isFav(activePlan.id, routineNum) ? '#f59e0b' : '#e2e8f0', background: isFav(activePlan.id, routineNum) ? '#fef3c7' : 'white', color: isFav(activePlan.id, routineNum) ? '#92400e' : '#64748b' }}>
-          <Icon name="star" size={14}/>{isFav(activePlan.id, routineNum) ? 'Favorita ★' : 'Marcar favorita'}
-        </button>
-        <div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Material</div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {PRESET_TAGS.map(t => (
-              <button key={t} onClick={() => toggleTag(t)} style={{ padding: '6px 12px', borderRadius: 20, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 600,
-                borderColor: sessionDraft.tags.includes(t) ? '#1e3a8a' : '#e2e8f0', background: sessionDraft.tags.includes(t) ? '#1e3a8a' : 'white', color: sessionDraft.tags.includes(t) ? 'white' : '#64748b' }}>{t}</button>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 7, marginTop: 8 }}>
-            <input value={customTag} onChange={e => setCustomTag(e.target.value)} onKeyDown={e => e.key === 'Enter' && addCustom()} placeholder="Otro material..."
-              style={{ flex: 1, padding: '8px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', fontSize: 13, outline: 'none' }}/>
-            <button onClick={addCustom} style={{ padding: '8px 11px', borderRadius: 10, border: 'none', background: '#1e3a8a', color: 'white', cursor: 'pointer' }}><Icon name="add" size={15}/></button>
-          </div>
-          {sessionDraft.tags.filter(t => !PRESET_TAGS.includes(t)).map(t => (
-            <span key={t} style={{ display: 'inline-block', margin: '4px 4px 0 0', background: '#f0f9ff', color: '#0369a1', borderRadius: 8, padding: '3px 10px', fontSize: 12, fontWeight: 600 }}>
-              {t} <span style={{ cursor: 'pointer' }} onClick={() => toggleTag(t)}>×</span>
-            </span>
-          ))}
-        </div>
-        <div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 7 }}>Nota</div>
-          <textarea value={sessionDraft.note} onChange={e => setSessionDraft(d => ({ ...d, note: e.target.value }))} placeholder="Cómo fue, sensaciones..."
-            style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', fontSize: 13, resize: 'none', outline: 'none', height: 65, boxSizing: 'border-box' }}/>
-        </div>
-        <button onClick={logSession} style={{ padding: 14, borderRadius: 14, border: 'none', background: 'linear-gradient(135deg,#1e3a8a,#2563eb)', color: 'white', fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>
-          ¡Completada! →
-        </button>
-      </div>
-    )
-  }
-
-  const SkipModal = () => {
-    const [search, setSearch] = useState('')
-    const routines = Array.from({ length: activePlan.routines }, (_, i) => i).reverse()
-    const filtered = search ? routines.filter(i => String(i + 1).includes(search)) : routines
-    return (
-      <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 11 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 18, fontFamily: "'Bebas Neue', cursive", letterSpacing: 1, color: '#0f172a' }}>Ir a rutina · {activePlan.emoji} {activePlan.name}</div>
-          <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><Icon name="close"/></button>
-        </div>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar número..."
-          style={{ padding: '10px 14px', borderRadius: 12, border: '1.5px solid #e2e8f0', fontSize: 14, outline: 'none' }}/>
-        <div style={{ maxHeight: 340, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 5 }}>
-          {filtered.slice(0, 60).map(i => (
-            <button key={i} onClick={() => { setCurrentIndex(activePlan.id, i); setModal(null) }}
-              style={{ padding: '10px 14px', borderRadius: 11, border: '1.5px solid', cursor: 'pointer', textAlign: 'left', fontSize: 13, fontWeight: 600,
-                borderColor: currentIndex === i ? '#1e3a8a' : '#e2e8f0', background: currentIndex === i ? '#dbeafe' : 'white', color: currentIndex === i ? '#1e3a8a' : '#334155',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              Rutina {i + 1}
-              <span style={{ display: 'flex', gap: 5 }}>
-                {isFav(activePlan.id, i + 1) && <span style={{ color: '#f59e0b' }}>★</span>}
-                {currentIndex === i && <span style={{ fontSize: 10, color: '#1e40af' }}>← actual</span>}
-              </span>
-            </button>
-          ))}
-          {filtered.length > 60 && <div style={{ textAlign: 'center', fontSize: 11, color: '#94a3b8', padding: 6 }}>Filtra para ver más resultados</div>}
-        </div>
-      </div>
-    )
-  }
-
-  const EditPlanModal = () => (
-    <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 15 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: 18, fontFamily: "'Bebas Neue', cursive", letterSpacing: 1, color: '#0f172a' }}>Editar plan</div>
-        <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><Icon name="close"/></button>
-      </div>
-      {[['Emoji', 'emoji', '22px', 'text'], ['Nombre', 'name', '14px', 'text']].map(([label, field, fs, type]) => (
-        <div key={field}>
-          <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1 }}>{label}</label>
-          <input value={editingPlan[field]} onChange={e => setEditingPlan(p => ({ ...p, [field]: e.target.value }))}
-            style={{ display: 'block', width: '100%', marginTop: 5, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', fontSize: fs, outline: 'none', boxSizing: 'border-box' }}/>
-        </div>
-      ))}
-      <div>
-        <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1 }}>Número de rutinas</label>
-        <input type="number" min={1} max={999} value={editingPlan.routines}
-          onChange={e => setEditingPlan(p => ({ ...p, routines: Math.max(1, Math.min(999, Number(e.target.value))) }))}
-          style={{ display: 'block', width: '100%', marginTop: 5, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', fontSize: 22, fontWeight: 700, outline: 'none', boxSizing: 'border-box', color: '#1e3a8a' }}/>
-        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>Máximo 999 rutinas por plan</div>
-      </div>
-      <button onClick={() => { setState(s => ({ ...s, plans: s.plans.map(p => p.id === editingPlan.id ? editingPlan : p) })); setModal(null) }}
-        style={{ padding: 14, borderRadius: 14, border: 'none', background: '#1e3a8a', color: 'white', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
-        Guardar cambios
-      </button>
-    </div>
-  )
-
-  const NewPlanModal = () => (
-    <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 15 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: 18, fontFamily: "'Bebas Neue', cursive", letterSpacing: 1, color: '#0f172a' }}>Nuevo plan</div>
-        <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><Icon name="close"/></button>
-      </div>
-      {[['Emoji', 'emoji', '22px'], ['Nombre', 'name', '14px']].map(([label, field, fs]) => (
-        <div key={field}>
-          <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1 }}>{label}</label>
-          <input value={newPlanDraft[field]} onChange={e => setNewPlanDraft(p => ({ ...p, [field]: e.target.value }))} placeholder={field === 'name' ? 'Nombre del plan' : ''}
-            style={{ display: 'block', width: '100%', marginTop: 5, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', fontSize: fs, outline: 'none', boxSizing: 'border-box' }}/>
-        </div>
-      ))}
-      <div>
-        <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1 }}>Número de rutinas</label>
-        <input type="number" min={1} max={999} value={newPlanDraft.routines}
-          onChange={e => setNewPlanDraft(p => ({ ...p, routines: Math.max(1, Math.min(999, Number(e.target.value))) }))}
-          style={{ display: 'block', width: '100%', marginTop: 5, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e2e8f0', fontSize: 22, fontWeight: 700, outline: 'none', boxSizing: 'border-box', color: '#1e3a8a' }}/>
-      </div>
-      <button onClick={() => {
-        if (!newPlanDraft.name.trim()) return
-        const np = { id: `plan-${Date.now()}`, emoji: newPlanDraft.emoji, name: newPlanDraft.name.trim(), routines: newPlanDraft.routines }
-        setState(s => ({ ...s, plans: [...s.plans, np], currentIndexByPlan: { ...s.currentIndexByPlan, [np.id]: np.routines - 1 } }))
-        setModal(null)
-      }} style={{ padding: 14, borderRadius: 14, border: 'none', background: '#1e3a8a', color: 'white', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
-        Crear plan
-      </button>
-    </div>
-  )
-
   const activeModal = modal && (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(15,23,42,0.55)', display: 'flex', alignItems: 'flex-end' }}
       onClick={e => { if (e.target === e.currentTarget) setModal(null) }}>
       <div style={{ width: '100%', maxWidth: 480, margin: '0 auto', background: '#f0f6ff', borderRadius: '24px 24px 0 0', maxHeight: '88vh', overflowY: 'auto', animation: 'slideUp .22s ease' }}>
-        {modal === 'log'      && <LogModal/>}
-        {modal === 'skip'     && <SkipModal/>}
-        {modal === 'editPlan' && editingPlan && <EditPlanModal/>}
-        {modal === 'newPlan'  && <NewPlanModal/>}
+        {modal === 'log' && (
+          <LogModal
+            activePlan={activePlan}
+            currentRoutine={currentRoutine}
+            sessionDraft={sessionDraft}
+            setSessionDraft={setSessionDraft}
+            isFav={isFav}
+            toggleFav={toggleFav}
+            logSession={logSession}
+            onClose={() => setModal(null)}
+          />
+        )}
+        {modal === 'skip' && (
+          <SkipModal
+            activePlan={activePlan}
+            currentIndex={currentIndex}
+            isFav={isFav}
+            onSelect={(i) => { setCurrentIndex(activePlan.id, i); setModal(null) }}
+            onClose={() => setModal(null)}
+          />
+        )}
+        {modal === 'editPlan' && editingPlan && (
+          <EditPlanModal
+            editingPlan={editingPlan}
+            setEditingPlan={setEditingPlan}
+            onSave={() => { setState(s => ({ ...s, plans: s.plans.map(p => p.id === editingPlan.id ? editingPlan : p) })); setModal(null) }}
+            onClose={() => setModal(null)}
+          />
+        )}
+        {modal === 'newPlan' && (
+          <NewPlanModal
+            newPlanDraft={newPlanDraft}
+            setNewPlanDraft={setNewPlanDraft}
+            onCreate={(np) => { setState(s => ({ ...s, plans: [...s.plans, np], currentIndexByPlan: { ...s.currentIndexByPlan, [np.id]: np.routines - 1 } })); setModal(null) }}
+            onClose={() => setModal(null)}
+          />
+        )}
       </div>
     </div>
   )
