@@ -1,155 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>🗺️ OlMaps</title>
-<link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="icon.png"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="OlMaps"/>
-<meta name="theme-color" content="#1b4332"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#f2ede3;
-  --surface:#faf7f0;
-  --surface2:#e8e0d0;
-  --border:#cec4ae;
-  --border2:#b8ab94;
-  --text:#2a1f10;
-  --muted:#6e5c42;
-  --muted2:#4e3d26;
-  --accent:#2d6a4f;
-  --accent2:#40916c;
-  --accent3:#1b4332;
-  --brown:#7b5e3a;
-  --teal:#1a6060;
-  --amber:#c49a0a;
-  --red:#b83c0c;
-  --orange:#d4712a;
-  --purple:#614880;
-}
-html{font-size:15px}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;line-height:1.5}
-h1,h2,h3{font-family:'Syne',sans-serif}
-button{font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:all .15s}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#1e3a8a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="OlFit" />
+    <meta name="description" content="Tu tracker personal de Fuertafit" />
 
-.header{background:var(--accent3);border-bottom:3px solid var(--brown);padding:14px 20px;position:sticky;top:0;z-index:100}
-.header-inner{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:12px}
-.logo{flex:1}
-.logo h1{font-size:20px;font-weight:800;letter-spacing:-.5px;color:#f0ead8}
-.logo h1 span{color:#95d5b2}
-.logo p{font-size:11px;color:#74c69d;margin-top:2px}
-.logo p.err{color:#ffb4a2}
+    <link rel="icon" type="image/ico" href="/olfit/favicon.ico" />
+    <link rel="apple-touch-icon" href="/olfit/icons/apple-touch-icon.png" />
 
-.main{max-width:680px;margin:0 auto;padding:20px 16px 60px}
-
-.btn-primary{background:var(--accent);color:#fff;padding:8px 18px;border-radius:8px;font-weight:700;font-size:13px;border:2px solid var(--accent3)}
-.btn-primary:hover{background:var(--accent2)}
-.btn-ghost{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#d8f3dc;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:600}
-.btn-ghost:hover{background:rgba(255,255,255,.22);color:#fff}
-.btn-outline{background:var(--surface2);border:1px solid var(--border2);color:var(--muted2);padding:6px 13px;border-radius:8px;font-size:12px;font-weight:600}
-.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-.btn-danger{background:#fceee8;color:var(--red);border:1px solid #f0c0a8;padding:6px 13px;border-radius:8px;font-size:12px;font-weight:600}
-.btn-danger:hover{background:#f8ddd0}
-.btn-save{padding:9px 22px;background:var(--accent);border-radius:8px;color:#fff;font-weight:700;font-size:14px;border:2px solid var(--accent3)}
-.btn-save:hover{background:var(--accent2)}
-.btn-cancel{padding:9px 18px;background:var(--surface2);border-radius:8px;color:var(--muted2);font-weight:600;font-size:14px;border:1px solid var(--border2)}
-.btn-create{width:100%;padding:10px;background:var(--accent);border-radius:8px;color:#fff;font-weight:700;font-size:14px;margin-bottom:16px;font-family:'DM Sans',sans-serif;border:2px solid var(--accent3);cursor:pointer}
-.btn-create:disabled{opacity:.4;cursor:not-allowed}
-.btn-connect{width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--muted2);font-weight:700;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer}
-.btn-connect:hover{color:var(--accent);border-color:var(--accent)}
-
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center;box-shadow:0 1px 4px #0001}
-.stat-icon{font-size:18px}
-.stat-val{font-size:19px;font-weight:800;font-family:'Syne',sans-serif}
-.stat-lbl{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
-
-.filters{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
-.filter-row{display:flex;gap:6px;flex-wrap:wrap}
-.chip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;background:var(--surface);color:var(--muted);border:1px solid var(--border)}
-.chip:hover{border-color:var(--accent);color:var(--accent)}
-.chip.cs{background:var(--accent);color:#fff;border-color:var(--accent3)}
-.chip.ca{background:var(--brown);color:#fff;border-color:#5a3d1e}
-.chip.ct{background:var(--teal);color:#fff;border-color:#0e4040}
-.search{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none}
-.search:focus{border-color:var(--accent)}
-
-.route-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px;transition:box-shadow .2s;box-shadow:0 1px 4px #0001}
-.route-card:hover{box-shadow:0 4px 16px #0002}
-.card-head{padding:14px 16px;cursor:pointer;display:flex;align-items:flex-start;gap:10px}
-.card-act{font-size:22px;line-height:1;flex-shrink:0}
-.card-body{flex:1;min-width:0}
-.card-title{font-weight:700;color:var(--text);font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.card-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
-.tag{padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
-.chevron{color:var(--muted);font-size:11px;flex-shrink:0;margin-top:4px}
-.card-detail{border-top:1px solid var(--border);background:var(--surface2);padding:14px 16px}
-.detail-link{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-size:13px;margin-bottom:12px;word-break:break-all;text-decoration:none;font-weight:600}
-.detail-link:hover{color:var(--accent3)}
-.detail-env{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.notes-box{color:var(--muted2);font-size:13px;line-height:1.6;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px;white-space:pre-wrap}
-.card-actions{display:flex;gap:8px;justify-content:flex-end}
-
-.empty{text-align:center;padding:70px 20px}
-.empty-icon{font-size:52px;margin-bottom:14px}
-.empty p{color:var(--muted);font-size:15px}
-
-.overlay{position:fixed;inset:0;background:rgba(20,12,4,.55);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
-.modal{background:var(--surface);border-radius:16px;padding:24px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;border:1px solid var(--border2);box-shadow:0 24px 64px #0003}
-.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.modal-head h2{font-size:17px;color:var(--text)}
-.modal-close{background:var(--surface2);color:var(--muted);border-radius:8px;width:32px;height:32px;font-size:15px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
-.modal-close:hover{color:var(--text)}
-
-.field{margin-bottom:14px}
-.field label{display:block;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
-.fi,.fs,.ft{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:8px 12px;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none}
-.fi:focus,.fs:focus,.ft:focus{border-color:var(--accent)}
-.ft{min-height:80px;resize:vertical}
-.fs option{background:var(--surface)}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.sec{border-top:2px dashed var(--border);margin:16px 0;padding-top:14px}
-.sec-lbl{color:var(--accent3);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
-
-.seg{display:flex;background:var(--bg);border-radius:8px;padding:3px;gap:2px;border:1px solid var(--border)}
-.seg-btn{flex:1;padding:6px 8px;border-radius:6px;font-size:12px;font-weight:600;background:transparent;color:var(--muted);border:none}
-.seg-btn.on{background:var(--accent);color:#fff}
-
-.bool-row{display:flex;gap:8px}
-.bool-btn{flex:1;padding:8px;border-radius:8px;font-size:13px;font-weight:600;background:var(--bg);color:var(--muted);border:2px solid var(--border2)}
-.bool-btn.on{border-color:var(--accent);color:var(--accent);background:#d8f3dc55}
-
-.ac{position:relative}
-.ac-drop{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:8px;z-index:10;margin-top:4px;overflow:hidden;box-shadow:0 4px 16px #0002}
-.ac-item{padding:8px 12px;cursor:pointer;color:var(--text);font-size:14px;border-bottom:1px solid var(--border)}
-.ac-item:hover{background:var(--surface2)}
-.ac-item:last-child{border-bottom:none}
-
-.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
-
-.setup-tip{background:#d8f3dc;border:1px solid #95d5b2;border-radius:10px;padding:12px 16px;margin-bottom:18px;color:var(--accent3);font-size:13px;line-height:1.6}
-.setup-tip code{background:#b7e4c7;padding:2px 6px;border-radius:4px;color:var(--accent3);font-size:12px}
-.div-or{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:12px}
-.div-or::before,.div-or::after{content:'';flex:1;height:1px;background:var(--border)}
-.cur-gist{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--muted)}
-.cur-gist code{color:var(--accent3);font-size:11px;word-break:break-all}
-.err-msg{color:var(--red);font-size:13px;margin-top:10px;text-align:center}
-
-@media(max-width:480px){
-  .stats{grid-template-columns:repeat(2,1fr)}
-  .g2{grid-template-columns:1fr}
-  .header-inner{gap:8px}
-}
-</style>
-  <script type="module" crossorigin src="/olfit/assets/index-BnmqVtu9.js"></script>
-<link rel="manifest" href="/olfit/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/olfit/registerSW.js"></script></head>
-<body>
-<div id="app"></div>
-</body>
+    <title>OlFit</title>
+    <script type="module" crossorigin src="/olfit/assets/index-DEClPlxW.js"></script>
+  <link rel="manifest" href="/olfit/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/olfit/registerSW.js"></script></head>
+  <body>
+    <div id="root"></div>
+  </body>
 </html>
